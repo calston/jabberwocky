@@ -16,9 +16,9 @@ def readImage(filename, w, h):
         for j in range(w):
             x, y = (j*blX, i*blY) 
 
-            # Get a block from the sample and resize to 32x32
+            # Get a block from the sample and resize 
             imBlock = im.crop(
-                (x, y, x+blX, y+blY)).resize((32, 32))
+                (x, y, x+blX, y+blY)).resize((20, 20))
 
             blocks.append(
                 numpy.asarray(imBlock.convert('L')).flatten()

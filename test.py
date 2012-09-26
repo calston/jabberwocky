@@ -24,8 +24,22 @@ def test1():
     print J
     print g
 
-test1()
 
 X,y = readDigits.loadSet('digits.jpg', 10, 5, "72104149590690159734966540740131347271211792351244")
+
+# This set is too small, only 50 samples - we need that to be many times more
+
+print "Starting..."
+
+nx1 = X.copy()
+ny1 = y.copy()
+
+print nx1.shape, ny1.shape
+
+for i in []: #range(99):
+    X = np.vstack([X, nx1])
+    y = np.hstack([y, ny1])
+
+print X.shape, y.shape
 
 predict.minimiseLRF(X, y, 0.1)

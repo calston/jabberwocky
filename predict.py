@@ -11,11 +11,11 @@ def lrCost(theta, X, y, l):
     rTheta = theta.copy()
     rTheta[0] = 0
 
-    m = len(y)
+    m = float(len(y))
 
     hx = sigmoid(X.dot(theta))
 
-    J = 1.0/m * (-y.dot(np.log(hx)) - (1 - y).dot(np.log(1 - hx))) + (l/(2*m))*(rTheta**2).sum()
+    J = (1.0/m) * (-y.dot(np.log(hx)) - (1.0 - y).dot(np.log(1.0 - hx)))# + (l/(2.0*m))*(rTheta**2).sum()
 
     return J
 
@@ -24,20 +24,19 @@ def lrGrad(theta, X, y, l):
     rTheta = theta.copy()
     rTheta[0] = 0
 
-    m = len(y)
+    m = float(len(y))
 
     hx = sigmoid(X.dot(theta))
 
 
-    grad = 1.0/m * (hx - y).dot(X) + (l/m)*rTheta
-    
-    return grad
+    grad = 1.0/m * (hx - y).dot(X) #+ (l/m)*rTheta
+
+    return grad.transpose()
    
 
 def minimiseLRF(X, y, l):
     # Minimuses logistic sigmoid function to theta for each discrete set
     labels = y.max()+1
-    labels = 1
     
     m, n = X.shape
 
@@ -45,12 +44,13 @@ def minimiseLRF(X, y, l):
     X = np.hstack([np.ones((m, 1)), X])
 
     for i in range(labels):
-        initial_t = np.zeros((n + 1, 1))
+        initial_t = np.zeros((n + 1, 1)).transpose()
 
-        lrC = lambda t: lrCost(t, X, y, 0.2)
-        lrG = lambda t: lrGrad(t, X, y, 0.2) 
+        lrC = lambda t: lrCost(t, X, y==i, 0.2)
+        lrG = lambda t: lrGrad(t, X, y==i, 0.2) 
         
-        q = optimize.fmin_cg(lrC, initial_t, lrG, maxiter=40)
+        qtheta = optimize.fmin_cg(lrC, initial_t, lrG, maxiter=100)
 
-        print q[0], q[1]
-
+        theta[i, :] = qtheta
+        
+    print theta
