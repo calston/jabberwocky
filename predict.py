@@ -1,4 +1,6 @@
 import numpy as np
+from scipy import optimize
+
 
 def sigmoid(z):
     # Sigmoid function 
@@ -6,17 +8,21 @@ def sigmoid(z):
 
 def lrCost(theta, X, y, l):
     # Logistic regression cost function
-    rTheta = theta
+    rTheta = theta.copy()
     rTheta[0] = 0
+
     m = len(y)
 
-    hx = sigmoid(X.dot(theta));
+    hx = sigmoid(X.dot(theta))
 
-    return 1/m * (-y.transpose()*np.log(hx) - (1 - y.transpose())*np.log(1 - hx)) + (l/(2*m))*(rTheta**2).sum()
+    J = 1/m * (-y.dot(np.log(hx)) - (1 - y).dot(np.log(1 - hx))) + (l/(2*m))*(rTheta**2).sum()
+
+    return J
 
 def minimiseLRF(X, y, l):
     # Minimuses logistic sigmoid function to theta for each discrete set
     labels = y.max()+1
+    labels = 1
     
     m, n = X.shape
 
@@ -29,4 +35,7 @@ def minimiseLRF(X, y, l):
         lcJ = lambda t: lrCost(t, X, y, 0.1)
 
         # ... where's my minimizorz :( 
-        optimize.fmin_cg(lcJ, initial_t, maxiter=100)
+        q = optimize.fmin_cg(lcJ, initial_t, maxiter=100)
+
+        print q
+
