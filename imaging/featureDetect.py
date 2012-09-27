@@ -1,4 +1,4 @@
-from PIL import Image, ImageOps, ImageDraw
+from PIL import Image, ImageOps, ImageDraw, ImageFont
 from matplotlib import pyplot
 import numpy
 
@@ -49,7 +49,6 @@ def findParent(x, y, features):
             if f and (f not in found):
                 found.append(f)
     return found
-
 
 def isolateDigits(filename, contrastMin=100, contrastMax=256, tollerance=20, correctionFactor = 5, showTest = False):
     """Isolates and extracts features from an image.
@@ -145,6 +144,8 @@ def isolateDigits(filename, contrastMin=100, contrastMax=256, tollerance=20, cor
                 x1-correctionFactor, y1-correctionFactor, 
                 x2+correctionFactor, y2+correctionFactor))
 
+    features.sort(key = lambda k: (k[1], k[0]))
+
     # Cut all the features out of the primary image and resize
     blocks = []
     for box in features:
@@ -157,10 +158,15 @@ def isolateDigits(filename, contrastMin=100, contrastMax=256, tollerance=20, cor
     if showTest:
         im = im.convert('RGB')
         draw = ImageDraw.Draw(im)
+        boxnum = 0
         for box in features:
+            boxnum += 1
+            x1, y1, x2, y2 = box
             draw.rectangle(
-                (box[0]-2, box[1]-2, box[2]+2, box[3]+2),
+                (x1-2, y1-2, x2+2, y2+2),
             outline="#ff0000")
+            
+            draw.text((x1 + (x2-x1)/2, y1 + (y2-y1)/2), str(boxnum), fill="#00ff00")
 
         im.show()
 
