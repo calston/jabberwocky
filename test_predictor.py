@@ -1,4 +1,6 @@
 import readDigits, predict
+from imaging import readDigits, featureDetect
+from detection import sigmoidlr
 
 import numpy as np
 
@@ -18,8 +20,8 @@ def test1():
     print X
     print y, initial_t
 
-    J= predict.lrCost(initial_t, X, y, 0.1)
-    g= predict.lrGrad(initial_t, X, y, 0.1)
+    J= sigmoidlr.lrCost(initial_t, X, y, 0.1)
+    g= sigmoidlr.lrGrad(initial_t, X, y, 0.1)
 
     print J
     print g
@@ -34,16 +36,16 @@ X = np.vstack([X, X2])
 y = np.hstack([y, y2])
 
 print "Training logistic analyser"
-theta = predict.minimiseLRF(X, y, 0.1)
+theta = sigmoidlr.minimiseLRF(X, y, 0.1)
 
 
 print "Picking a test"
-blocks = readDigits.isolateDigits('samples/sample1.png')
+blocks = featureDetect.extractFeatures('samples/sample1.png')
 myBlock = blocks[6]
 blockVector = np.asarray(myBlock)#.flatten()
 print blockVector
 
-val = predict.predict(blockVector.flatten(), theta)
+val = sigmoidlr.predict(blockVector.flatten(), theta)
 
 print "The digit looks like ", val
 

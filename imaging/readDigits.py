@@ -1,4 +1,4 @@
-from PIL import Image, ImageOps, ImageDraw, ImageFont
+from PIL import Image, ImageOps
 from matplotlib import pyplot
 import numpy
 

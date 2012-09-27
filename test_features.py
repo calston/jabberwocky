@@ -1,5 +1,3 @@
-import readDigits, predict
+from imaging import featureDetect
 
-import numpy as np
-
-blocks = readDigits.isolateDigits('samples/sample1.png', showTest = True)
+blocks = featureDetect.extractFeatures('samples/sample1.png', showTest = True)
