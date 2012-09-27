@@ -25,21 +25,25 @@ def test1():
     print g
 
 
-X,y = readDigits.loadSet('digits.jpg', 10, 5, "72104149590690159734966540740131347271211792351244")
-
-# This set is too small, only 50 samples - we need that to be many times more
-
 print "Starting..."
+X,y = readDigits.loadSet('samples/digits.jpg', 10, 5, "72104149590690159734966540740131347271211792351244")
 
-nx1 = X.copy()
-ny1 = y.copy()
+X2,y2 = readDigits.loadSet('samples/moredigits.png', 10, 9, "111111111112222222223333333333444444444455555555556666666666777777777788888888889999999999")
 
-print nx1.shape, ny1.shape
+X = np.vstack([X, X2])
+y = np.hstack([y, y2])
 
-for i in []: #range(99):
-    X = np.vstack([X, nx1])
-    y = np.hstack([y, ny1])
+print "Training logistic analyser"
+theta = predict.minimiseLRF(X, y, 0.1)
 
-print X.shape, y.shape
 
-predict.minimiseLRF(X, y, 0.1)
+print "Picking a test"
+blocks = readDigits.isolateDigits('samples/sample1.png')
+myBlock = blocks[6]
+blockVector = np.asarray(myBlock)#.flatten()
+print blockVector
+
+val = predict.predict(blockVector.flatten(), theta)
+
+print "The digit looks like ", val
+
