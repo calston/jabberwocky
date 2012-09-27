@@ -1,4 +1,4 @@
-from PIL import Image, ImageOps
+from PIL import Image, ImageOps, ImageDraw
 from matplotlib import pyplot
 import numpy
 
@@ -37,14 +37,32 @@ def loadSet(filename, w, h, vals):
 
 def snapTo(x, y, features):
     # Find aproximately neighbouring pixels in the features set
+    found = []
     for i in range(-2,3):
         for j in range(-2,3):
             # Run through every permutation of the nearest nodes
             tpl = (x+i, y+j)
             if tpl in features:
-                return tpl
-    return None
+                found.append(tpl)
+    return found
 
+def collideBox(b, v):
+    x1,y1,x2,y2 = b
+    a1,b1,a2,b2 = v
+    if (x2 > a1) and (x1 < a2) and (y2 > b1) and (y1 < b2):
+        return True
+    return False
+
+def mergeBox(b,v):
+    x1,y1,x2,y2 = b
+    a1,b1,a2,b2 = v
+    nx1 = min(x1, a1)
+    ny1 = min(y1, b1) 
+    nx2 = max(x2, a2)
+    ny2 = max(y2, b2) 
+    
+    return (nx1, ny1, nx2, ny2)
+ 
 def isolateDigits(filename):
     """ A very very suboptimal quick and dirty feature detection
         using scanlines and a tree and some solidly unfounded 
@@ -62,18 +80,17 @@ def isolateDigits(filename):
         x+= 1
 
         # Find bright pixels
-        point = val > 80
+        point = val > 0
 
         if point:
             # Find neighbouring pixels
             feature = snapTo(x,y, features)
             if feature:
                 # Index the parent feature to this feature
-                ft = features[feature]
+                for f in feature:
+                    features[(x,y)] = features[f]
             else:
-                ft = (x, y)
-
-            features[(x,y)] = ft
+                features[(x,y)] = (x,y)
         
         # Reset the scan line
         if x == w:
@@ -94,6 +111,9 @@ def isolateDigits(filename):
             ]
 
     features = []
+
+    correctionFactor = 2
+
     # Create boxes
     for k,v in revFeatures.items():
         x,y = v 
@@ -103,8 +123,38 @@ def isolateDigits(filename):
 
         # Calculate the feature area to discard any noise
         area = (x2-x1)*(y2-y1)
-        if area>600:
-            features.append((x1-5, y1-5, x2+5, y2+5))
+        
+        
+        if area > 20:
+            features.append((
+                x1-correctionFactor, 
+                y1-correctionFactor, 
+                x2+correctionFactor, 
+                y2+correctionFactor))
+
+    # Intersec the boxes
+    for j,b in enumerate(features):
+        if not b:
+            continue 
+
+        for i, v in enumerate(features):
+            if i==j or not v:
+                continue 
+            x1,y1,x2,y2 = b
+            a1,b1,a2,b2 = v
+
+            if collideBox(b, v):
+                features[i] = mergeBox(b, v)
+                features[j] = None
+    
+    nfeatures = []
+    # Clean u the merged boxes
+    for v in features:
+        if v:
+            x1,y1,x2,y2 = v
+            nfeatures.append((x1, y1, x2, y2))
+
+    features = nfeatures
 
     # Cut all the features out of the primary image and resize
     blocks = []
@@ -112,5 +162,12 @@ def isolateDigits(filename):
         imBlock = im.crop(
             box).resize((BLOCKSIZE, BLOCKSIZE))
         blocks.append(imBlock)
+
+    im = im.convert('RGB')
+    draw = ImageDraw.Draw(im)
+    for box in features:
+        draw.rectangle(box, outline="#ff0000")
+
+    im.show()
 
     return blocks
