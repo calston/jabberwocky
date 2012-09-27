@@ -75,6 +75,7 @@ def isolateDigits(filename):
     feature_index = 0
     features = {}
 
+    # Scan image sequentially
     st = im.getdata()
     for val in st:
         x+= 1
@@ -86,7 +87,7 @@ def isolateDigits(filename):
             # Find neighbouring pixels
             feature = snapTo(x,y, features)
             if feature:
-                # Index the parent feature to this feature
+                # Index the parent feature to this feature tree
                 for f in feature:
                     features[(x,y)] = features[f]
             else:
@@ -111,7 +112,6 @@ def isolateDigits(filename):
             ]
 
     features = []
-
     correctionFactor = 2
 
     # Create boxes
@@ -121,16 +121,12 @@ def isolateDigits(filename):
         x1, x2 = (min(x),  max(x))
         y1, y2 = (min(y), max(y))
 
-        # Calculate the feature area to discard any noise
+        # Discard noise
         area = (x2-x1)*(y2-y1)
-        
-        
         if area > 20:
             features.append((
-                x1-correctionFactor, 
-                y1-correctionFactor, 
-                x2+correctionFactor, 
-                y2+correctionFactor))
+                x1-correctionFactor, y1-correctionFactor, 
+                x2+correctionFactor, y2+correctionFactor))
 
     # Intersec the boxes
     for j,b in enumerate(features):
@@ -160,13 +156,16 @@ def isolateDigits(filename):
     blocks = []
     for box in features:
         imBlock = im.crop(
-            box).resize((BLOCKSIZE, BLOCKSIZE))
+            (box[0]-2, box[1]-2, box[2]+2, box[3]+2)
+        ).resize((BLOCKSIZE, BLOCKSIZE))
         blocks.append(imBlock)
 
     im = im.convert('RGB')
     draw = ImageDraw.Draw(im)
     for box in features:
-        draw.rectangle(box, outline="#ff0000")
+        draw.rectangle(
+            (box[0]-2, box[1]-2, box[2]+2, box[3]+2),
+        outline="#ff0000")
 
     im.show()
 
